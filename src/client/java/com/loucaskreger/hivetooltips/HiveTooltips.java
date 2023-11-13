@@ -38,8 +38,11 @@ public class HiveTooltips implements ClientModInitializer {
             if (hiveNbt.contains("BlockStateTag")) {
                 var blockStateTag = hiveNbt.getCompound("BlockStateTag");
                 if (blockStateTag.contains("honey_level")) {
-                    var honeyLevel = blockStateTag.getInt("honey_level");
-                    lines.add(Text.literal(String.format("(%d/%d) Honey", honeyLevel, MAX_HONEY_LEVEL)).setStyle(Style.EMPTY.withColor(0xffec66ff)));
+                    // Empty honey levels are stored as an int https://bugs.mojang.com/browse/MC-179531
+                    String honeyLevel = blockStateTag.getString("honey_level");
+                    if (honeyLevel.isEmpty())
+                        honeyLevel = "" + blockStateTag.getInt("honey_level");
+                    lines.add(Text.literal(String.format("(%s/%d) Honey", honeyLevel, MAX_HONEY_LEVEL)).setStyle(Style.EMPTY.withColor(0xFFFFFF00)));
                 }
             }
         }
