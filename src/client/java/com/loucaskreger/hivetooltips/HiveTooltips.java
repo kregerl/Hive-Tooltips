@@ -13,24 +13,35 @@ import net.minecraft.text.Text;
 import java.util.List;
 
 public class HiveTooltips implements ClientModInitializer {
-	private static final int MAX_BEES = 3;
+    private static final int MAX_BEES = 3;
+    private static final int MAX_HONEY_LEVEL = 5;
 
-	@Override
-	public void onInitializeClient() {
-		ItemTooltipCallback.EVENT.register(this::onItemTooltip);
-	}
+    @Override
+    public void onInitializeClient() {
+        ItemTooltipCallback.EVENT.register(this::onItemTooltip);
+    }
 
-	private void onItemTooltip(ItemStack stack, TooltipContext context, List<Text> lines) {
-//		Get the number of bees from the itemstack nbt data
-		if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof BeehiveBlock) {
-			var hiveNbt = stack.getNbt();
-			if (hiveNbt != null && hiveNbt.contains("BlockEntityTag")) {
-				var blockEntityTag = hiveNbt.getCompound("BlockEntityTag");
-				if (blockEntityTag.contains("Bees")) {
-					var bees = blockEntityTag.getList("Bees", NbtElement.COMPOUND_TYPE);
-					lines.add(Text.literal(String.format("(%d/%d) Bees", bees.size(), MAX_BEES)).setStyle(Style.EMPTY.withColor(0x347debff)));
-				}
-			}
-		}
-	}
+    private void onItemTooltip(ItemStack stack, TooltipContext context, List<Text> lines) {
+//		Get the number of bees and honey level from the itemstack nbt data
+        if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof BeehiveBlock) {
+            var hiveNbt = stack.getNbt();
+            if (hiveNbt == null)
+                return;
+
+            if (hiveNbt.contains("BlockEntityTag")) {
+                var blockEntityTag = hiveNbt.getCompound("BlockEntityTag");
+                if (blockEntityTag.contains("Bees")) {
+                    var bees = blockEntityTag.getList("Bees", NbtElement.COMPOUND_TYPE);
+                    lines.add(Text.literal(String.format("(%d/%d) Bees", bees.size(), MAX_BEES)).setStyle(Style.EMPTY.withColor(0x347debff)));
+                }
+            }
+            if (hiveNbt.contains("BlockStateTag")) {
+                var blockStateTag = hiveNbt.getCompound("BlockStateTag");
+                if (blockStateTag.contains("honey_level")) {
+                    var honeyLevel = blockStateTag.getInt("honey_level");
+                    lines.add(Text.literal(String.format("(%d/%d) Honey", honeyLevel, MAX_HONEY_LEVEL)).setStyle(Style.EMPTY.withColor(0xffec66ff)));
+                }
+            }
+        }
+    }
 }
